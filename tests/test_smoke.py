@@ -11,7 +11,7 @@ import polyagent
 
 
 def test_version_exposed() -> None:
-    assert polyagent.__version__ == "0.1.1"
+    assert polyagent.__version__ == "0.1.2"
 
 
 def test_all_subpackages_importable() -> None:
