@@ -6,10 +6,19 @@ import asyncio
 import json
 from datetime import datetime
 
+import os
+
 import typer
 
 from polyagent import __version__
 from polyagent.cli.demo import build_demo_orchestrator
+
+
+def _resolve_provider(provider: str | None) -> str:
+    """Auto-detect: deepseek if key is set, otherwise mock."""
+    if provider:
+        return provider
+    return "deepseek" if os.getenv("DEEPSEEK_API_KEY") else "mock"
 
 app = typer.Typer(
     name="polyagent",
@@ -32,12 +41,13 @@ def version() -> None:
 @app.command()
 def run(
     goal: str = typer.Argument(help="The goal to decompose and execute."),
-    provider: str = typer.Option(
-        "mock", help="mock | deepseek (deepseek needs DEEPSEEK_API_KEY)."
+    provider: str | None = typer.Option(
+        None, help="mock | deepseek (default: auto-detect from DEEPSEEK_API_KEY)."
     ),
     persist: bool = typer.Option(True, help="Save the run to polyagent.db."),
 ) -> None:
     """Run the multi-agent pipeline on a goal."""
+    provider = _resolve_provider(provider)
     asyncio.run(_run_async(goal, provider, persist))
 
 
@@ -102,10 +112,13 @@ async def _run_async(goal: str, provider: str, persist: bool = True) -> None:
 
 @app.command()
 def chat(
-    provider: str = typer.Option("mock", help="mock | deepseek."),
+    provider: str | None = typer.Option(
+        None, help="mock | deepseek (default: auto-detect from DEEPSEEK_API_KEY)."
+    ),
     stream: bool = typer.Option(False, help="Stream tokens live (deepseek only)."),
 ) -> None:
     """Interactive single-agent chat (Ctrl-D to exit)."""
+    provider = _resolve_provider(provider)
     asyncio.run(_chat_async(provider, stream))
 
 
