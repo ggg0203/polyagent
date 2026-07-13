@@ -1,0 +1,114 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "polyagent"
+version = "0.1.0"
+description = "PolyAgent — a model-agnostic multi-agent orchestration framework."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [
+    { name = "PolyAgent Contributors", email = "noreply@example.com" },
+]
+maintainers = [
+    { name = "PolyAgent Maintainers", email = "noreply@example.com" },
+]
+keywords = [
+    "agent",
+    "llm",
+    "multi-agent",
+    "orchestration",
+    "tool-use",
+    "rag",
+    "openai",
+    "deepseek",
+    "middleware",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3 :: Only",
+    "Framework :: AsyncIO",
+    "Framework :: Pydantic",
+    "Framework :: Pydantic :: 2",
+    "Operating System :: OS Independent",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
+]
+# PyPI 页面会显示这些链接（点击可跳转）
+[project.urls]
+Homepage = "https://github.com/yourname/polyagent"
+Repository = "https://github.com/yourname/polyagent"
+Documentation = "https://github.com/yourname/polyagent#readme"
+Issues = "https://github.com/yourname/polyagent/issues"
+Changelog = "https://github.com/yourname/polyagent/blob/main/CHANGELOG.md"
+
+dependencies = [
+    "pydantic>=2.6",
+    "pydantic-settings>=2.2",
+    "httpx>=0.27",
+    "typer>=0.12",
+    "structlog>=24.1",
+    "anyio>=4.3",
+]
+
+[project.optional-dependencies]
+rag = [
+    "chromadb>=0.5",
+    "fastembed>=0.3",
+    "sentence-transformers>=3.0",
+]
+observability = [
+    "opentelemetry-sdk>=1.25",
+    "opentelemetry-exporter-otlp-proto-http>=1.25",
+    "prometheus_client>=0.20",
+]
+dev = [
+    "pytest>=8",
+    "pytest-asyncio>=0.23",
+    "ruff>=0.5",
+    "mypy>=1.10",
+]
+
+[project.scripts]
+polyagent = "polyagent.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["polyagent*"]
+
+# ---------- ruff ----------
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "C4"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["E501"]
+
+# ---------- mypy ----------
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+ignore_missing_imports = true
+# Tool subclasses specialise run(args: SpecificModel) vs base run(args: BaseModel) —
+# a known Liskov trade-off for typed tool args; the runtime `call()` validates.
+disable_error_code = ["override"]
+
+# ---------- pytest ----------
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+addopts = "-ra --cov=polyagent --cov-report=term-missing --cov-fail-under=75"

@@ -1,0 +1,30 @@
+services:
+  jaeger:
+    image: jaegertracing/all-in-one:1.60
+    ports:
+      - "16686:16686"  # Jaeger UI
+      - "4318:4318"    # OTLP/HTTP collector
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+
+  pushgateway:
+    image: prom/pushgateway:latest
+    ports:
+      - "9091:9091"
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    depends_on:
+      - pushgateway
+
+  # polyagent CLI (opt-in via --profile app)
+  # usage: docker compose --profile app run --rm polyagent run "your goal"
+  polyagent:
+    build: .
+    profiles: ["app"]
+    env_file: [.env]
+    entrypoint: ["polyagent"]
