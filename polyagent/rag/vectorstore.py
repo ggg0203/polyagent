@@ -61,7 +61,7 @@ class ChromaVectorStore:
         await asyncio.to_thread(
             self._collection.upsert,
             ids=[id],
-            embeddings=[vector],  # type: ignore[arg-type]
+            embeddings=[vector],  # type: ignore[arg-type]  # chromadb type stubs vs runtime
             metadatas=[metadata],
         )
 
@@ -70,7 +70,7 @@ class ChromaVectorStore:
 
         results = await asyncio.to_thread(
             self._collection.query,
-            query_embeddings=[vector],  # type: ignore[arg-type]
+            query_embeddings=[vector],  # type: ignore[arg-type]  # chromadb type stubs vs runtime
             n_results=k,
         )
         ids = (results.get("ids") or [[]])[0]
@@ -79,4 +79,4 @@ class ChromaVectorStore:
         return [(i, 1.0 / (1.0 + d), dict(m)) for i, d, m in zip(ids, dists, metas, strict=True)]
 
     def __len__(self) -> int:
-        return self._collection.count()
+        return int(self._collection.count())
