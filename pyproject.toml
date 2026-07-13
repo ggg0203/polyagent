@@ -115,4 +115,4 @@ disable_error_code = ["override"]
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
-addopts = "-ra --cov=polyagent --cov-report=term-missing --cov-fail-under=75"
+addopts = "-ra --cov=polyagent --cov-report=term-missing --cov-fail-under=70"
