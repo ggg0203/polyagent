@@ -8,7 +8,7 @@ pgvector behind the same protocol.
 from __future__ import annotations
 
 import math
-from typing import Any, Protocol, TypeAlias
+from typing import Any, Protocol, TypeAlias, cast
 
 Hit: TypeAlias = tuple[str, float, dict[str, Any]]
 
@@ -61,7 +61,7 @@ class ChromaVectorStore:
         await asyncio.to_thread(
             self._collection.upsert,
             ids=[id],
-            embeddings=[vector],  # type: ignore[arg-type]  # chromadb type stubs vs runtime
+            embeddings=cast(Any, [vector]),
             metadatas=[metadata],
         )
 
@@ -70,7 +70,7 @@ class ChromaVectorStore:
 
         results = await asyncio.to_thread(
             self._collection.query,
-            query_embeddings=[vector],  # type: ignore[arg-type]  # chromadb type stubs vs runtime
+            query_embeddings=cast(Any, [vector]),
             n_results=k,
         )
         ids = (results.get("ids") or [[]])[0]
