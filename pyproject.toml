@@ -45,11 +45,11 @@ classifiers = [
 ]
 # PyPI 页面会显示这些链接（点击可跳转）
 [project.urls]
-Homepage = "https://github.com/yourname/polyagent"
-Repository = "https://github.com/yourname/polyagent"
-Documentation = "https://github.com/yourname/polyagent#readme"
-Issues = "https://github.com/yourname/polyagent/issues"
-Changelog = "https://github.com/yourname/polyagent/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/ggg0203/polyagent"
+Repository = "https://github.com/ggg0203/polyagent"
+Documentation = "https://github.com/ggg0203/polyagent#readme"
+Issues = "https://github.com/ggg0203/polyagent/issues"
+Changelog = "https://github.com/ggg0203/polyagent/blob/main/CHANGELOG.md"
 
 dependencies = [
     "pydantic>=2.6",
