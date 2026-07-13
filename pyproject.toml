@@ -3,7 +3,7 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "polyagent"
+name = "scgnb666"
 version = "0.1.0"
 description = "PolyAgent — a model-agnostic multi-agent orchestration framework."
 readme = "README.md"
@@ -43,13 +43,6 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Typing :: Typed",
 ]
-# PyPI 页面会显示这些链接（点击可跳转）
-[project.urls]
-Homepage = "https://github.com/ggg0203/polyagent"
-Repository = "https://github.com/ggg0203/polyagent"
-Documentation = "https://github.com/ggg0203/polyagent#readme"
-Issues = "https://github.com/ggg0203/polyagent/issues"
-Changelog = "https://github.com/ggg0203/polyagent/blob/main/CHANGELOG.md"
 
 dependencies = [
     "pydantic>=2.6",
@@ -59,6 +52,14 @@ dependencies = [
     "structlog>=24.1",
     "anyio>=4.3",
 ]
+
+# PyPI 页面会显示这些链接
+[project.urls]
+Homepage = "https://github.com/ggg0203/polyagent"
+Repository = "https://github.com/ggg0203/polyagent"
+Documentation = "https://github.com/ggg0203/polyagent#readme"
+Issues = "https://github.com/ggg0203/polyagent/issues"
+Changelog = "https://github.com/ggg0203/polyagent/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 rag = [
