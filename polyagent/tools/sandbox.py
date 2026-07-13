@@ -52,9 +52,7 @@ class DockerSandbox:
         err = stderr.decode(errors="replace")
         ok = proc.returncode == 0
         body = out if ok else (err or out)
-        return ToolResult(
-            output=body, error=not ok, metadata={"returncode": proc.returncode}
-        )
+        return ToolResult(output=body, error=not ok, metadata={"returncode": proc.returncode})
 
 
 class PathGuard:

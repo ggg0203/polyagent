@@ -45,11 +45,7 @@ BUILTIN_SKILLS: list[dict[str, Any]] = [
 def search_skills(query: str) -> list[dict[str, Any]]:
     """Search builtin skills by keyword (case-insensitive, matches name/desc)."""
     q = query.lower()
-    return [
-        s
-        for s in BUILTIN_SKILLS
-        if q in s["name"].lower() or q in s["description"].lower()
-    ]
+    return [s for s in BUILTIN_SKILLS if q in s["name"].lower() or q in s["description"].lower()]
 
 
 def list_skills() -> list[dict[str, Any]]:

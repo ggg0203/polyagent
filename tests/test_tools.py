@@ -157,7 +157,7 @@ async def test_skillhub_search_handles_offline() -> None:
 async def test_skillhub_list_empty() -> None:
     """skillhub_list with no installed skills should return meaningful message."""
     import shutil
-    from pathlib import Path
+
     from polyagent.tools.builtins import SKILLHUB_SKILLS_DIR
 
     if SKILLHUB_SKILLS_DIR.exists():
@@ -171,7 +171,9 @@ async def test_skillhub_search_api_parsing() -> None:
     """Test the search API parsing function various response shapes."""
     import json as _json
     from unittest.mock import patch
+
     from httpx import Response
+
     from polyagent.tools.builtins import _skillhub_search_api
 
     def _resp(data) -> Response:
@@ -179,9 +181,9 @@ async def test_skillhub_search_api_parsing() -> None:
 
     # Mock a valid JSON response
     with patch("httpx.AsyncClient.get") as mock_get:
-        mock_get.return_value = _resp({
-            "results": [{"name": "Test Skill", "slug": "test-skill", "description": "A test"}]
-        })
+        mock_get.return_value = _resp(
+            {"results": [{"name": "Test Skill", "slug": "test-skill", "description": "A test"}]}
+        )
         results = await _skillhub_search_api("test")
         assert len(results) == 1
         assert results[0]["name"] == "Test Skill"
@@ -200,9 +202,7 @@ async def test_skillhub_search_api_parsing() -> None:
 
     # Mock list response (some APIs return a list directly)
     with patch("httpx.AsyncClient.get") as mock_get:
-        mock_get.return_value = _resp([
-            {"name": "Direct List Skill"}
-        ])
+        mock_get.return_value = _resp([{"name": "Direct List Skill"}])
         results = await _skillhub_search_api("direct")
         assert len(results) == 1
 
@@ -210,7 +210,7 @@ async def test_skillhub_search_api_parsing() -> None:
 async def test_skillhub_download_handles_errors() -> None:
     """SkillHub download should handle missing skills gracefully."""
     import shutil
-    from pathlib import Path
+
     from polyagent.tools.builtins import SKILLHUB_SKILLS_DIR, _skillhub_download_skill
 
     if SKILLHUB_SKILLS_DIR.exists():
@@ -225,13 +225,15 @@ def test_skillhub_parse_search_result() -> None:
     from polyagent.tools.builtins import _skillhub_parse_search_result
 
     # Full result
-    r1 = _skillhub_parse_search_result({
-        "name": "PDF Helper",
-        "slug": "pdf-helper",
-        "description": "Help process PDF files",
-        "tags": ["pdf", "document"],
-        "author": "Tencent",
-    })
+    r1 = _skillhub_parse_search_result(
+        {
+            "name": "PDF Helper",
+            "slug": "pdf-helper",
+            "description": "Help process PDF files",
+            "tags": ["pdf", "document"],
+            "author": "Tencent",
+        }
+    )
     assert "PDF Helper" in r1
     assert "pdf-helper" in r1
 
@@ -249,7 +251,9 @@ def test_skillhub_slug_extraction_from_prompt() -> None:
     from polyagent.tools.builtins import _extract_skillhub_slug
 
     # Chinese install pattern
-    slug = _extract_skillhub_slug("请根据 https://skillhub.cn/install/skillhub.md，安装 pdf-image-text-extractor。")
+    slug = _extract_skillhub_slug(
+        "请根据 https://skillhub.cn/install/skillhub.md，安装 pdf-image-text-extractor。"
+    )
     assert slug == "pdf-image-text-extractor"
 
     # English install pattern
@@ -274,9 +278,7 @@ async def test_skillhub_install_from_prompt_no_slug() -> None:
 
 async def test_web_search_returns_results() -> None:
     """WebSearch should handle connect/offline gracefully and not crash."""
-    result = await WebSearch().call(
-        {"query": "Python programming language", "max_results": 2}
-    )
+    result = await WebSearch().call({"query": "Python programming language", "max_results": 2})
     # Verify the tool executes without crash regardless of network status.
     assert result is not None
     assert isinstance(result.output, str)

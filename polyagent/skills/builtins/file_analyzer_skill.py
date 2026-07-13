@@ -48,7 +48,7 @@ class AnalyzeFile(Tool):
             char_count = len(text)
             word_count = len(text.split())
             # Count non-empty lines
-            non_empty = sum(1 for l in lines if l.strip())
+            non_empty = sum(1 for line in lines if line.strip())
         except Exception:
             line_count = char_count = word_count = non_empty = 0
             text = ""
@@ -65,7 +65,7 @@ class AnalyzeFile(Tool):
         )
 
 
-def _fmt_size(n: int) -> str:
+def _fmt_size(n: float) -> str:
     for unit in ("B", "KB", "MB", "GB"):
         if n < 1024:
             return f"{n:.1f}{unit}"
@@ -93,5 +93,5 @@ def _detect_encoding(head: bytes) -> str | None:
     return None
 
 
-def get_tools():
+def get_tools() -> list[AnalyzeFile]:
     return [AnalyzeFile()]

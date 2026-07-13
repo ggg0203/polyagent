@@ -56,7 +56,6 @@ def test_install_from_url_fails_on_bad_url() -> None:
 
 def test_load_skills_into_empty_dir() -> None:
     """load_skills_into on a clean directory should register 0 tools."""
-    from pathlib import Path
 
     from polyagent.skills.installer import load_skills_into
     from polyagent.tools import ToolRegistry

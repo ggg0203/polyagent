@@ -14,7 +14,7 @@ import re
 import sys
 from asyncio.subprocess import PIPE
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from polyagent.tools.sandbox import DockerSandbox
@@ -170,8 +170,7 @@ class GrepFilesArgs(BaseModel):
 class GrepFiles(Tool):
     name = "grep_files"
     description = (
-        "Recursively search files in a directory for a regex; "
-        "returns 'path:line:content'."
+        "Recursively search files in a directory for a regex; returns 'path:line:content'."
     )
     args_model = GrepFilesArgs
 
@@ -215,16 +214,14 @@ class WebSearch(Tool):
     description = (
         "Search the web for current information. "
         "Returns title + snippet + URL for each result. "
-        'Supports engines: bing (default, works in China), duckduckgo, sogou. '
+        "Supports engines: bing (default, works in China), duckduckgo, sogou. "
         "Use this for real-time info, news, documentation lookups, etc."
     )
     args_model = WebSearchArgs
 
     # ── Bing ──────────────────────────────────────────────────────────────── #
 
-    async def _search_bing(
-        self, query: str, max_results: int
-    ) -> list[str]:
+    async def _search_bing(self, query: str, max_results: int) -> list[str]:
         async with httpx.AsyncClient(timeout=10.0, follow_redirects=True) as client:
             resp = await client.get(
                 "https://www.bing.com/search",
@@ -242,35 +239,25 @@ class WebSearch(Tool):
 
         results: list[str] = []
         # Each result sits inside <li class="b_algo">.
-        blocks = re.findall(
-            r'<li[^>]*class="b_algo"[^>]*>(.*?)</li>', resp.text, re.DOTALL
-        )
+        blocks = re.findall(r'<li[^>]*class="b_algo"[^>]*>(.*?)</li>', resp.text, re.DOTALL)
         for i, block in enumerate(blocks[:max_results]):
             # Title + link inside <h2 class="..."><a href="URL">TITLE</a></h2>
-            m = re.search(
-                r'<h2[^>]*>.*?<a[^>]*href="([^"]*)"[^>]*>(.*?)</a>', block, re.DOTALL
-            )
+            m = re.search(r'<h2[^>]*>.*?<a[^>]*href="([^"]*)"[^>]*>(.*?)</a>', block, re.DOTALL)
             # Snippet inside <p> tag
-            s = re.search(r'<p[^>]*>(.*?)</p>', block, re.DOTALL)
+            s = re.search(r"<p[^>]*>(.*?)</p>", block, re.DOTALL)
             if m:
                 href = m.group(1)
                 title = re.sub(r"<[^>]+>", "", m.group(2)).strip()
-                snippet = (
-                    re.sub(r"<[^>]+>", "", s.group(1)).strip() if s else ""
-                )
+                snippet = re.sub(r"<[^>]+>", "", s.group(1)).strip() if s else ""
                 results.append(f"{i + 1}. {title}\n   {snippet}\n   {href}")
 
         return results
 
     # ── DuckDuckGo (lite) ─────────────────────────────────────────────────── #
 
-    async def _search_duckduckgo(
-        self, query: str, max_results: int
-    ) -> list[str]:
+    async def _search_duckduckgo(self, query: str, max_results: int) -> list[str]:
         async with httpx.AsyncClient(timeout=10.0, follow_redirects=True) as client:
-            resp = await client.post(
-                "https://lite.duckduckgo.com/lite/", data={"q": query}
-            )
+            resp = await client.post("https://lite.duckduckgo.com/lite/", data={"q": query})
         if resp.status_code >= 400:
             raise RuntimeError(f"HTTP {resp.status_code}")
 
@@ -280,9 +267,7 @@ class WebSearch(Tool):
             html,
             re.DOTALL,
         )
-        snippets = re.findall(
-            r'<td[^>]*class="result-snippet"[^>]*>(.*?)</td>', html, re.DOTALL
-        )
+        snippets = re.findall(r'<td[^>]*class="result-snippet"[^>]*>(.*?)</td>', html, re.DOTALL)
 
         results: list[str] = []
         for i, (href, title) in enumerate(links[:max_results]):
@@ -290,9 +275,7 @@ class WebSearch(Tool):
             snippet = ""
             if i < len(snippets):
                 snippet = re.sub(r"<[^>]+>", "", snippets[i]).strip()
-            results.append(
-                f"{i + 1}. {title_clean}\n   {snippet}\n   {href}"
-            )
+            results.append(f"{i + 1}. {title_clean}\n   {snippet}\n   {href}")
         return results
 
     # ── Sogou ─────────────────────────────────────────────────────────────── #
@@ -330,9 +313,7 @@ class WebSearch(Tool):
             if m:
                 href = m.group(1)
                 title = re.sub(r"<[^>]+>", "", m.group(2)).strip()
-                snippet = (
-                    re.sub(r"<[^>]+>", "", s.group(1)).strip() if s else ""
-                )
+                snippet = re.sub(r"<[^>]+>", "", s.group(1)).strip() if s else ""
                 results.append(f"{i + 1}. {title}\n   {snippet}\n   {href}")
 
         return results
@@ -348,10 +329,7 @@ class WebSearch(Tool):
         searcher = engine_map.get(args.engine)
         if searcher is None:
             return ToolResult(
-                output=(
-                    f"Unknown engine '{args.engine}'. "
-                    f"Supported: {', '.join(engine_map)}"
-                ),
+                output=(f"Unknown engine '{args.engine}'. Supported: {', '.join(engine_map)}"),
                 error=True,
             )
 
@@ -364,13 +342,10 @@ class WebSearch(Tool):
             )
 
         if not results:
-            return ToolResult(
-                output=f"No results found for '{args.query}' ({args.engine})."
-            )
+            return ToolResult(output=f"No results found for '{args.query}' ({args.engine}).")
 
-        output = (
-            f"Web search results for '{args.query}' [{args.engine}]:\n\n"
-            + "\n\n".join(results)
+        output = f"Web search results for '{args.query}' [{args.engine}]:\n\n" + "\n\n".join(
+            results
         )
         return ToolResult(output=output)
 
@@ -407,9 +382,7 @@ class MarketplaceSearch(Tool):
         for s in results:
             tools = ", ".join(s.get("tools", []))
             lines.append(
-                f"  📦 {s['name']} v{s['version']}\n"
-                f"     {s['description']}\n"
-                f"     Tools: {tools}\n"
+                f"  📦 {s['name']} v{s['version']}\n     {s['description']}\n     Tools: {tools}\n"
             )
         return ToolResult(output="\n".join(lines))
 
@@ -441,11 +414,13 @@ class MarketplaceInstall(Tool):
 
 SKILLHUB_SKILLS_DIR = Path.home() / ".polyagent" / "skillhub-skills"
 SKILLHUB_SEARCH_URL = "https://api.skillhub.cn/api/v1/search"
-SKILLHUB_DOWNLOAD_URL = "https://skillhub-1388575217.cos.ap-guangzhou.myqcloud.com/skills/{slug}.zip"
+SKILLHUB_DOWNLOAD_URL = (
+    "https://skillhub-1388575217.cos.ap-guangzhou.myqcloud.com/skills/{slug}.zip"
+)
 SKILLHUB_INDEX_URL = "https://skillhub-1388575217.cos.ap-guangzhou.myqcloud.com/skills.json"
 
 
-async def _skillhub_search_api(query: str) -> list[dict]:
+async def _skillhub_search_api(query: str) -> list[dict[str, Any]]:
     """Call SkillHub search API and return results list."""
     import json as _json
 
@@ -492,7 +467,7 @@ async def _skillhub_download_skill(slug: str, dest: Path) -> tuple[bool, str]:
     return True, f"downloaded to {dest}"
 
 
-def _skillhub_parse_search_result(s: dict) -> str:
+def _skillhub_parse_search_result(s: dict[str, Any]) -> str:
     """Format one skill search result for display."""
     name = s.get("name") or s.get("slug") or s.get("title", "?")
     slug = s.get("slug") or s.get("id", "")
@@ -524,8 +499,8 @@ class SkillHubSearch(Tool):
         if not results:
             return ToolResult(
                 output=f"No results for '{args.query}' on SkillHub. "
-                       "The API might need a different format; "
-                       "try a simpler keyword."
+                "The API might need a different format; "
+                "try a simpler keyword."
             )
         formatted = [_skillhub_parse_search_result(s) for s in results[:15]]
         header = f"SkillHub results for '{args.query}' ({len(results)} found):\n\n"
@@ -585,11 +560,15 @@ class SkillHubList(Tool):
                     entries.append(f"  📦 {d.name}: {desc[:100] if desc else '(no desc)'}")
         if not entries:
             return ToolResult(output="No SkillHub skills found.")
-        return ToolResult(output=f"Installed SkillHub skills ({len(entries)}):\n" + "\n".join(entries))
+        return ToolResult(
+            output=f"Installed SkillHub skills ({len(entries)}):\n" + "\n".join(entries)
+        )
 
 
 class SkillHubInstallFromPromptArgs(BaseModel):
-    prompt: str = Field(..., description="The official SkillHub installation prompt copied from the website.")
+    prompt: str = Field(
+        ..., description="The official SkillHub installation prompt copied from the website."
+    )
 
 
 class SkillHubInstallFromPrompt(Tool):
@@ -602,14 +581,13 @@ class SkillHubInstallFromPrompt(Tool):
     args_model = SkillHubInstallFromPromptArgs
 
     async def run(self, args: SkillHubInstallFromPromptArgs) -> ToolResult:
-        import re
 
         slug = _extract_skillhub_slug(args.prompt)
         if not slug:
             return ToolResult(
                 output="Could not find a skill slug in the prompt. "
-                       "Expected something like: '安装 pdf-image-text-extractor'\n\n"
-                       f"Prompt received:\n{args.prompt[:300]}",
+                "Expected something like: '安装 pdf-image-text-extractor'\n\n"
+                f"Prompt received:\n{args.prompt[:300]}",
                 error=True,
             )
 
@@ -646,7 +624,9 @@ def _extract_skillhub_slug(prompt: str) -> str | None:
         return m.group(1)
 
     # 3. Try URL path: https://skillhub.cn/install/xxx.md or /skills/{slug}.zip
-    m = re.search(r"skillhub\.cn/(?:install/|skills/)([a-zA-Z0-9_-]+)(?:\.md|\.zip)?", prompt, re.IGNORECASE)
+    m = re.search(
+        r"skillhub\.cn/(?:install/|skills/)([a-zA-Z0-9_-]+)(?:\.md|\.zip)?", prompt, re.IGNORECASE
+    )
     if m:
         return m.group(1)
     m = re.search(r"skills/([a-zA-Z0-9_-]+)\.zip", prompt, re.IGNORECASE)

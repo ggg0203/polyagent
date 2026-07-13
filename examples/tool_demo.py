@@ -15,7 +15,6 @@ import json
 from polyagent.core import Agent, AgentSpec
 from polyagent.core.types import ToolCall
 from polyagent.llm import LLMClient, MockProvider
-from polyagent.llm.mock import LLMResponse
 from polyagent.llm.types import LLMResponse as LLMResponseType
 from polyagent.tools import with_builtins
 
@@ -67,7 +66,7 @@ async def main():
     print("\n  user> 计算 1+2+...+100\n")
     print("  [Agent 工具循环] 调用 python_execute 执行: print(sum(range(1, 101)))")
     resp = await agent.run("计算 1+2+...+100")
-    print(f"  [工具输出] 5050")
+    print("  [工具输出] 5050")
     print(f"  agent> {resp.content}\n")
 
 

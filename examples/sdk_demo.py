@@ -36,7 +36,7 @@ async def demo_single_agent():
 
     # 4. 运行 Agent
     resp = await agent.run("你好，你是谁？")
-    print(f"  user> 你好，你是谁？")
+    print("  user> 你好，你是谁？")
     print(f"  agent> {resp.content}")
     print()
 
@@ -68,16 +68,16 @@ async def demo_agent_with_tools():
     # 预设工具调用链：Agent 先执行一段 Python 代码，再返回结果
     # 注意：MockProvider 在模拟模式下不真正调用 LLM，这里展示的是真实 LLM 会走的过程
     resp = await agent.run("计算 1 到 100 的和")
-    print(f"  user> 计算 1 到 100 的和")
+    print("  user> 计算 1 到 100 的和")
     print(f"  agent> {resp.content}")
     print(f"  (使用 {len(resp.tool_calls or [])} 次工具调用)")
     print()
 
 
 # ─── 用法 3: 多 Agent 编排（Planner → Workers → Critic → Synthesizer）─
-from polyagent.orchestration import Orchestrator, Planner, Worker, Critic, Synthesizer
-from polyagent.observability import Tracer
 from polyagent.core.types import CostReport
+from polyagent.observability import Tracer
+from polyagent.orchestration import Critic, Orchestrator, Planner, Synthesizer, Worker
 
 
 def _make_agent(
@@ -122,7 +122,8 @@ async def demo_orchestrator():
     )
     planner = Planner(
         _make_agent(
-            "planner", "planner",
+            "planner",
+            "planner",
             "你将用户需求分解为 DAG 任务列表，输出 JSON。",
             script=[LLMResponse(content=PLAN_JSON, model="mock")],
         )
@@ -131,7 +132,8 @@ async def demo_orchestrator():
     # Worker: 并发执行子任务（可带工具）
     worker = Worker(
         _make_agent(
-            "worker", "worker",
+            "worker",
+            "worker",
             "你执行分配给你的子任务并报告结果。",
         )
     )
@@ -140,18 +142,22 @@ async def demo_orchestrator():
     ACCEPT = LLMResponse(content='{"accepted":true,"feedback":"ok"}', model="mock")
     critic = Critic(
         _make_agent(
-            "critic", "critic",
+            "critic",
+            "critic",
             "你评审任务输出质量，给出 accepted 或 feedback。",
             script=[ACCEPT, ACCEPT, ACCEPT],  # 3个任务各需要一次评审
-            default=ACCEPT,                     # 超出预设也用 ACCEPT 兜底
+            default=ACCEPT,  # 超出预设也用 ACCEPT 兜底
         )
     )
 
     # Synthesizer: 把所有结果汇总成最终答案
-    FINAL = LLMResponse(content="[最终报告] 项目分析完成：结构良好，3个模块，无明显问题。", model="mock")
+    FINAL = LLMResponse(
+        content="[最终报告] 项目分析完成：结构良好，3个模块，无明显问题。", model="mock"
+    )
     synthesizer = Synthesizer(
         _make_agent(
-            "synthesizer", "synthesizer",
+            "synthesizer",
+            "synthesizer",
             "你将所有子任务结果汇总为一份清晰报告。",
             script=[FINAL],
         )
@@ -161,7 +167,10 @@ async def demo_orchestrator():
     tracer = Tracer()
     cost = CostReport()
     orchestrator = Orchestrator(
-        planner, worker, critic, synthesizer,
+        planner,
+        worker,
+        critic,
+        synthesizer,
         tracer=tracer,
         cost_report=cost,
         max_review_retries=2,  # 最多重评审 2 次
@@ -173,17 +182,17 @@ async def demo_orchestrator():
     result = await orchestrator.run("分析当前项目的代码质量")
 
     # ==================== 4. 查看结果 ====================
-    print(f"  ✅ 最终答案:")
+    print("  ✅ 最终答案:")
     print(f"     {result.answer}")
     print()
-    print(f"  📊 运行统计:")
+    print("  📊 运行统计:")
     print(f"     - 总任务数:       {len(result.task_graph)}")
     print(f"     - 总尝试次数:     {result.total_attempts}")
     print(f"     - 总耗时:         {result.latency:.3f}s")
     print(f"     - 预估成本:       ${result.estimated_cost_usd:.6f}")
     print(f"     - Trace 根节点数: {len(tracer.roots)}")
     print()
-    print(f"  🔍 任务依赖图 (DAG):")
+    print("  🔍 任务依赖图 (DAG):")
     for task in result.task_graph:
         deps = ", ".join(task.deps) if task.deps else "(无)"
         print(f"     [{task.id}] {task.description}  ← 依赖: {deps}")
@@ -191,7 +200,7 @@ async def demo_orchestrator():
     # ==================== 5. 查看 Trace（可观测性） ====================
     print()
     roots = tracer.roots
-    print(f"  📝 Trace 详情 (Span 树):")
+    print("  📝 Trace 详情 (Span 树):")
     if roots:
         for root in roots:
             dur = ((root.end or 0) - root.start) * 1000
@@ -200,7 +209,7 @@ async def demo_orchestrator():
                 cdur = ((child.end or 0) - child.start) * 1000
                 print(f"        └─ {child.name} ({cdur:.1f}ms)")
     else:
-        print(f"     (无 Trace——Mock 模式下未记录)")
+        print("     (无 Trace——Mock 模式下未记录)")
 
 
 # ─── 主入口 ───────────────────────────────────────────

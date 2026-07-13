@@ -39,7 +39,5 @@ class ObservabilityMiddleware:
                 self.metrics.inc("llm.calls")
                 self.metrics.inc("llm.tokens", resp.usage.total_tokens)
             if self.logger:
-                self.logger.info(
-                    "llm_call", model=request.model, tokens=resp.usage.total_tokens
-                )
+                self.logger.info("llm_call", model=request.model, tokens=resp.usage.total_tokens)
             return resp

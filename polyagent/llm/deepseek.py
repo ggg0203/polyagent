@@ -8,11 +8,11 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from collections.abc import AsyncIterator
 from typing import Any
 
 import httpx
-import re
 
 from polyagent.core.exceptions import (
     ProviderUnavailableError,
@@ -230,9 +230,7 @@ def _parse_dsml(content: str) -> list[ToolCall] | None:
             )
             params[param_name] = param_value
         arguments = json.dumps(params, ensure_ascii=False) if params else "{}"
-        calls.append(
-            ToolCall(id=f"dsml_{len(calls)}", name=name, arguments=arguments)
-        )
+        calls.append(ToolCall(id=f"dsml_{len(calls)}", name=name, arguments=arguments))
 
     return calls if calls else None
 

@@ -23,7 +23,9 @@ async def test_echo_when_no_script() -> None:
 
 async def test_script_returns_items_in_order() -> None:
     r1 = LLMResponse(
-        content="first", model="mock", usage=Usage(prompt_tokens=1, completion_tokens=1, total_tokens=2)
+        content="first",
+        model="mock",
+        usage=Usage(prompt_tokens=1, completion_tokens=1, total_tokens=2),
     )
     r2 = LLMResponse(content="second", model="mock")
     prov = MockProvider(script=[r1, r2])

@@ -1,7 +1,6 @@
 """Tests for DeepSeek DSML tool-call parsing fallback."""
 
 from polyagent.llm.deepseek import _extract_tool_calls, _parse_dsml, _strip_dsml
-from polyagent.core.types import ToolCall
 
 
 def test_parse_dsml_web_search() -> None:
@@ -15,6 +14,7 @@ def test_parse_dsml_web_search() -> None:
     assert len(calls) == 1
     assert calls[0].name == "web_search"
     import json
+
     args = json.loads(calls[0].arguments)
     assert args["query"] == "2026世界杯 7月13日 半决赛"
 
@@ -44,13 +44,14 @@ def test_extract_tool_calls_falls_back_to_dsml() -> None:
     assert calls is not None
     assert calls[0].name == "web_search"
     import json
+
     args = json.loads(calls[0].arguments)
     assert args["query"] == "hello"
     assert cleaned == ""
 
 
 def test_strip_dsml_only() -> None:
-    text = "Before. <|DSML| |tool_calls>...<|DSML| |parameter name=\"x\">v</|DSML| |parameter>...</|DSML| |tool_calls> After."
+    text = 'Before. <|DSML| |tool_calls>...<|DSML| |parameter name="x">v</|DSML| |parameter>...</|DSML| |tool_calls> After.'
     cleaned = _strip_dsml(text)
     assert "<|DSML|" not in cleaned
     assert "Before." in cleaned

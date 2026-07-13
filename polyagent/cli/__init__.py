@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import json
-from datetime import datetime
-
 import os
+from datetime import datetime
 
 import typer
 
@@ -19,6 +19,7 @@ def _resolve_provider(provider: str | None) -> str:
     if provider:
         return provider
     return "deepseek" if os.getenv("DEEPSEEK_API_KEY") else "mock"
+
 
 app = typer.Typer(
     name="polyagent",
@@ -195,7 +196,8 @@ to any URL. Use this for fetching API data, downloading content, checking websit
 - **marketplace_install(name)** — Install a builtin skill. Tools available next turn.
 - **skillhub_search(query)** — Search **Tencent SkillHub** (skillhub.tencent.com) with 76,000+ AI skills.
 - **skillhub_install(slug)** — Install a skill from Tencent SkillHub by slug. Downloads SKILL.md + assets.
-- **skillhub_install_from_prompt(prompt)** — Install a SkillHub skill from the official prompt the user copied from the website. Extracts the skill slug and installs automatically.
+- **skillhub_install_from_prompt(prompt)** — Install a SkillHub skill from the official
+  prompt the user copied from the website. Extracts the skill slug and installs automatically.
 - **skillhub_list()** — List installed SkillHub skills with descriptions.
 
 ## Skill marketplaces
@@ -211,7 +213,8 @@ You have two skill marketplaces:
    - 76,000+ AI skills from https://skillhub.tencent.com
    - Skills cover: coding helpers, PDF processing, data analysis, web scraping, etc.
    - Uses direct REST API (no CLI needed). Search by keyword, install by slug.
-   - **Official install prompt**: when the user copies the prompt from a SkillHub skill page and pastes it, call skillhub_install_from_prompt(prompt_text) immediately.
+   - **Official install prompt**: when the user copies the prompt from a SkillHub skill page
+     and pastes it, call skillhub_install_from_prompt(prompt_text) immediately.
    - After installing, read the SKILL.md with read_file to understand its instructions.
 
 When the user asks for something not covered by your current tools, first search the \
@@ -370,9 +373,7 @@ async def _shell_async(stream: bool) -> None:
                 except json.JSONDecodeError:
                     args = {}
 
-                args_str = ", ".join(
-                    f"{k}={repr(v)[:60]}" for k, v in args.items()
-                )
+                args_str = ", ".join(f"{k}={repr(v)[:60]}" for k, v in args.items())
                 typer.echo(f"\n  ⚡ 调用 {call.name}({args_str})")
 
                 tool = tools.get(call.name)
@@ -388,9 +389,7 @@ async def _shell_async(stream: bool) -> None:
                 content = result.output[:2000]
                 if len(result.output) > 2000:
                     content += "\n...(truncated)"
-                messages.append(
-                    Message(role=Role.TOOL, content=content, tool_call_id=call.id)
-                )
+                messages.append(Message(role=Role.TOOL, content=content, tool_call_id=call.id))
         else:
             # Tool iterations exhausted — force a final summary without tools
             typer.echo()
@@ -414,10 +413,8 @@ async def _shell_async(stream: bool) -> None:
             messages.append(Message(role=Role.ASSISTANT, content=full_answer))
 
         # Persist conversation to SQLite for cross-session memory
-        try:
+        with contextlib.suppress(Exception):
             chat_store.save_messages(messages, "shell")
-        except Exception:
-            pass  # non-critical; skip silently
 
 
 # --------------------------------------------------------------------------- #
@@ -488,9 +485,7 @@ async def _talk_async(temperature: float) -> None:
         typer.echo("DEEPSEEK_API_KEY not set; check .env.", err=True)
         raise typer.Exit(1)
 
-    ds = DeepSeekProvider(
-        api_key=s.api_key, base_url=s.base_url, model=s.model
-    )
+    ds = DeepSeekProvider(api_key=s.api_key, base_url=s.base_url, model=s.model)
     tools = with_builtins()
 
     prompt = f"Today is {datetime.now().strftime('%Y-%m-%d')}.\n\n{_TALK_PROMPT}"
@@ -540,7 +535,7 @@ async def _talk_async(temperature: float) -> None:
         tool_schemas = tools.schemas()
 
         full_answer = ""
-        for iteration in range(agent.max_tool_iters):
+        for _iteration in range(agent.max_tool_iters):
             req = LLMRequest(
                 model=spec.model,
                 messages=messages,
@@ -570,11 +565,7 @@ async def _talk_async(temperature: float) -> None:
                 tool = tools.get(call.name)
                 if tool:
                     try:
-                        args = (
-                            json.loads(call.arguments)
-                            if call.arguments
-                            else {}
-                        )
+                        args = json.loads(call.arguments) if call.arguments else {}
                         result = await tool.call(args)
                         content = (result.output or "")[:2000]
                     except Exception:
@@ -604,15 +595,11 @@ async def _talk_async(temperature: float) -> None:
         # Output only the final answer — no tech noise
         if full_answer:
             typer.echo(f"\n🤖 {full_answer}\n")
-            messages.append(
-                Message(role=Role.ASSISTANT, content=full_answer)
-            )
+            messages.append(Message(role=Role.ASSISTANT, content=full_answer))
 
         # Persist conversation to SQLite for cross-session memory
-        try:
+        with contextlib.suppress(Exception):
             chat_store.save_messages(messages, "talk")
-        except Exception:
-            pass  # non-critical; skip silently
 
 
 @app.command("eval")
@@ -678,9 +665,7 @@ def show(run_id: str = typer.Argument(help="Run id to inspect.")) -> None:
     typer.echo(f"Cost: ${run['cost_usd']:.6f} | Latency: {run['latency']}s")
     typer.echo("Tasks:")
     for t in data["tasks"]:
-        typer.echo(
-            f"  [{t['status']}] {t['id']}: {t['description']} (attempts={t['attempts']})"
-        )
+        typer.echo(f"  [{t['status']}] {t['id']}: {t['description']} (attempts={t['attempts']})")
     trace = data["trace"]
     if trace:
         roots = trace.get("spans", [])

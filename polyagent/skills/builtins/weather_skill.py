@@ -47,10 +47,8 @@ class GetWeather(Tool):
             # Unknown city — simulate
             condition = random.choice(["晴", "多云", "阴", "小雨", "阵雨"])
             temp = random.randint(10, 35)
-        return ToolResult(
-            output=f"{args.city}：{condition}，{temp}°C"
-        )
+        return ToolResult(output=f"{args.city}：{condition}，{temp}°C")
 
 
-def get_tools():
+def get_tools() -> list[GetWeather]:
     return [GetWeather()]

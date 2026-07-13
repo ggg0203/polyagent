@@ -78,9 +78,7 @@ class RunStore:
                     task.attempts,
                 ),
             )
-        self._conn.execute(
-            "INSERT INTO traces VALUES (?,?)", (run_id, json.dumps(trace))
-        )
+        self._conn.execute("INSERT INTO traces VALUES (?,?)", (run_id, json.dumps(trace)))
         self._conn.commit()
         return run_id
 
@@ -93,14 +91,10 @@ class RunStore:
         return [dict(r) for r in rows]
 
     def get(self, run_id: str) -> dict[str, Any] | None:
-        run = self._conn.execute(
-            "SELECT * FROM runs WHERE id=?", (run_id,)
-        ).fetchone()
+        run = self._conn.execute("SELECT * FROM runs WHERE id=?", (run_id,)).fetchone()
         if run is None:
             return None
-        tasks = self._conn.execute(
-            "SELECT * FROM tasks WHERE run_id=?", (run_id,)
-        ).fetchall()
+        tasks = self._conn.execute("SELECT * FROM tasks WHERE run_id=?", (run_id,)).fetchall()
         trace_row = self._conn.execute(
             "SELECT span_json FROM traces WHERE run_id=?", (run_id,)
         ).fetchone()

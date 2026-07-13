@@ -1,11 +1,10 @@
 """生成 PolyAgent 产品说明书 (.docx)."""
 
 from docx import Document
-from docx.shared import Pt, Inches, RGBColor, Cm
-from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.table import WD_TABLE_ALIGNMENT
-from docx.enum.style import WD_STYLE_TYPE
+from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml.ns import qn
+from docx.shared import Cm, Pt, RGBColor
 
 doc = Document()
 
@@ -90,9 +89,7 @@ doc.add_paragraph(
 )
 
 doc.add_heading("1.2 设计动机", level=2)
-doc.add_paragraph(
-    "在实际工作中，单 Agent 直接调用 LLM 会碰到三个瓶颈："
-)
+doc.add_paragraph("在实际工作中，单 Agent 直接调用 LLM 会碰到三个瓶颈：")
 problems = [
     ("上下文爆炸", "一个 Agent 同时做计划 + 执行 + 总结，prompt 不断膨胀"),
     ("单点不可靠", "一次超时 / 限流就搞砸整个任务"),
@@ -134,13 +131,14 @@ doc.add_page_break()
 doc.add_heading("2. 核心架构", level=1)
 
 doc.add_heading("2.1 分层架构", level=2)
-doc.add_paragraph(
-    "PolyAgent 采用清晰的分层架构，从上到下依次为："
-)
+doc.add_paragraph("PolyAgent 采用清晰的分层架构，从上到下依次为：")
 
 layers = [
     ("CLI 层", "polyagent run / chat / shell / talk / eval / runs / show 命令入口"),
-    ("编排层", "Orchestrator 核心：Planner（计划）→ Workers（并行执行）→ Critic（评审回退）→ Synthesizer（汇总）"),
+    (
+        "编排层",
+        "Orchestrator 核心：Planner（计划）→ Workers（并行执行）→ Critic（评审回退）→ Synthesizer（汇总）",
+    ),
     ("Agent 执行器", "单 Agent 的工具循环 + 中间件链（限流→重试→降级→预算校验→成本统计）"),
     ("LLM 层", "MockProvider（离线）/ DeepSeekProvider（真实），支持流式输出"),
     ("工具系统", "PythonExecute / ReadFile / WriteFile / HttpRequest / GrepFiles / WebSearch"),
@@ -196,14 +194,14 @@ doc.add_paragraph(
 )
 
 doc.add_paragraph("第一步：打开 CMD 并切换到项目根目录")
-p = doc.add_paragraph('  cd /d D:\\孙\\WorkBuddy\\2026-07-10-18-40-02')
+p = doc.add_paragraph("  cd /d D:\\孙\\WorkBuddy\\2026-07-10-18-40-02")
 for r in p.runs:
     r.font.name = "Consolas"
     r.font.size = Pt(10)
 
 doc.add_paragraph("第二步：将 venv 的 Scripts 目录临时加入 PATH")
 p = doc.add_paragraph(
-    '  set PATH=C:\\Users\\孙\\.workbuddy\\binaries\\python\\envs\\default\\Scripts;%PATH%'
+    "  set PATH=C:\\Users\\孙\\.workbuddy\\binaries\\python\\envs\\default\\Scripts;%PATH%"
 )
 for r in p.runs:
     r.font.name = "Consolas"
@@ -215,17 +213,15 @@ doc.add_paragraph(
 )
 
 doc.add_paragraph(
-    '如果你想永久将 polyagent 加入 PATH，可以：'
-    '右键「此电脑」→ 属性 → 高级系统设置 → 环境变量 → '
-    '在「系统变量」的 Path 中新增：'
-    'C:\\Users\\孙\\.workbuddy\\binaries\\python\\envs\\default\\Scripts。'
-    '设置后重新打开 CMD 即可全局使用。'
+    "如果你想永久将 polyagent 加入 PATH，可以："
+    "右键「此电脑」→ 属性 → 高级系统设置 → 环境变量 → "
+    "在「系统变量」的 Path 中新增："
+    "C:\\Users\\孙\\.workbuddy\\binaries\\python\\envs\\default\\Scripts。"
+    "设置后重新打开 CMD 即可全局使用。"
 )
 
 doc.add_heading("3.3 离线体验", level=2)
-doc.add_paragraph(
-    "无需任何 API Key，直接 CLI 体验编排流水线："
-).runs[0].font.name = "Consolas"
+doc.add_paragraph("无需任何 API Key，直接 CLI 体验编排流水线：").runs[0].font.name = "Consolas"
 
 codes = [
     "polyagent version              # 查看版本",
@@ -248,7 +244,7 @@ codes2 = [
     "cd /d D:\\孙\\WorkBuddy\\2026-07-10-18-40-02    # 切换到项目根目录",
     "polyagent shell                  # 启动带工具的智能助手",
     "polyagent talk                   # 启动聊天模式（拟人化，隐藏工具）",
-    "polyagent run \"分析这个仓库\" --provider deepseek",
+    'polyagent run "分析这个仓库" --provider deepseek',
     "polyagent chat --provider deepseek --stream",
 ]
 for c in codes2:
@@ -266,7 +262,11 @@ doc.add_heading("4. CLI 使用指南", level=1)
 
 commands = [
     ("version", "查看版本号", "polyagent version"),
-    ("run", "运行多 Agent 编排流水线", 'polyagent run "目标" [--provider deepseek] [--persist/--no-persist]'),
+    (
+        "run",
+        "运行多 Agent 编排流水线",
+        'polyagent run "目标" [--provider deepseek] [--persist/--no-persist]',
+    ),
     ("chat", "交互式单 Agent 对话", "polyagent chat [--provider deepseek] [--stream]"),
     ("shell", "带全套工具的智能助手（推荐）", "polyagent shell"),
     ("talk", "聊天模式—拟人化对话，隐藏工具调用过程", "polyagent talk"),
@@ -308,9 +308,7 @@ doc.add_paragraph(
 )
 
 doc.add_heading("4.3 环境配置", level=2)
-doc.add_paragraph(
-    "项目根目录的 .env 文件存放配置。关键字段："
-)
+doc.add_paragraph("项目根目录的 .env 文件存放配置。关键字段：")
 
 env_items = [
     "DEEPSEEK_API_KEY=sk-xxx    # DeepSeek API Key",
@@ -324,9 +322,7 @@ for c in env_items:
         run.font.size = Pt(10)
 
 doc.add_heading("4.4 talk 命令详解", level=2)
-doc.add_paragraph(
-    "talk 是聊天模式命令，专为日常对话场景设计。与 shell 模式不同，talk 模式："
-)
+doc.add_paragraph("talk 是聊天模式命令，专为日常对话场景设计。与 shell 模式不同，talk 模式：")
 talk_features = [
     "完全隐藏工具调用过程：后台自动搜索/执行代码/读写文件，用户看不到任何技术细节",
     "拟人化回答风格：有情感、有温度、像真人朋友一样聊天",
@@ -337,8 +333,7 @@ talk_features = [
 for f in talk_features:
     doc.add_paragraph(f, style="List Bullet")
 doc.add_paragraph(
-    "talk 模式需要 DEEPSEEK_API_KEY。启动方式：polyagent talk。"
-    "输入 exit 或 Ctrl-D 退出。"
+    "talk 模式需要 DEEPSEEK_API_KEY。启动方式：polyagent talk。输入 exit 或 Ctrl-D 退出。"
 )
 
 doc.add_page_break()
@@ -350,7 +345,7 @@ doc.add_heading("5. SDK 使用指南", level=1)
 
 doc.add_heading("5.1 单 Agent — 基础对话", level=2)
 
-code1 = '''from polyagent.core import Agent, AgentSpec
+code1 = """from polyagent.core import Agent, AgentSpec
 from polyagent.llm import LLMClient, DeepSeekProvider
 
 agent = Agent(
@@ -358,7 +353,7 @@ agent = Agent(
     LLMClient(DeepSeekProvider()),
 )
 resp = await agent.run("你好，请介绍一下自己")
-print(resp.content)'''
+print(resp.content)"""
 p = doc.add_paragraph(code1)
 for run in p.runs:
     run.font.name = "Consolas"
@@ -366,7 +361,7 @@ for run in p.runs:
 
 doc.add_heading("5.2 单 Agent + 工具", level=2)
 
-code2 = '''from polyagent.tools import with_builtins
+code2 = """from polyagent.tools import with_builtins
 
 agent = Agent(
     AgentSpec(name="coder", role="worker"),
@@ -374,7 +369,7 @@ agent = Agent(
     tools=with_builtins(),  # 挂载全部工具
 )
 resp = await agent.run("计算 1+2+...+100 并保存到 result.txt")
-print(resp.content)'''
+print(resp.content)"""
 p = doc.add_paragraph(code2)
 for run in p.runs:
     run.font.name = "Consolas"
@@ -382,7 +377,7 @@ for run in p.runs:
 
 doc.add_heading("5.3 多 Agent 编排", level=2)
 
-code3 = '''from polyagent.orchestration import (
+code3 = """from polyagent.orchestration import (
     Orchestrator, Planner, Worker, Critic, Synthesizer
 )
 from polyagent.observability import Tracer
@@ -401,7 +396,7 @@ orchestrator = Orchestrator(
 result = await orchestrator.run("分析当前项目的代码质量")
 print(f"答案: {result.answer}")
 print(f"成本: ${result.estimated_cost_usd:.6f}")
-print(f"耗时: {result.latency:.3f}s")'''
+print(f"耗时: {result.latency:.3f}s")"""
 p = doc.add_paragraph(code3)
 for run in p.runs:
     run.font.name = "Consolas"
@@ -409,7 +404,7 @@ for run in p.runs:
 
 doc.add_heading("5.4 自定义工具", level=2)
 
-code4 = '''from polyagent.tools import Tool
+code4 = """from polyagent.tools import Tool
 from pydantic import BaseModel
 
 class MyArgs(BaseModel):
@@ -426,7 +421,7 @@ class MyTool(Tool):
 # 注册到 ToolRegistry
 from polyagent.tools import ToolRegistry
 reg = ToolRegistry()
-reg.register(MyTool())'''
+reg.register(MyTool())"""
 p = doc.add_paragraph(code4)
 for run in p.runs:
     run.font.name = "Consolas"
@@ -519,9 +514,15 @@ doc.add_heading("8. 多 Agent 编排详解", level=1)
 
 doc.add_heading("8.1 角色定义", level=2)
 roles = [
-    ("Planner", "将用户目标分解为 DAG（有向无环图）子任务。每个任务有 id、description、deps（依赖列表）。"),
+    (
+        "Planner",
+        "将用户目标分解为 DAG（有向无环图）子任务。每个任务有 id、description、deps（依赖列表）。",
+    ),
     ("Worker", "并发执行分配的子任务。可挂载工具（python_execute、read_file 等），支持自动重试。"),
-    ("Critic", "评审 Worker 的输出。输出 JSON：{\"accepted\": true/false, \"feedback\": \"...\"}。不通过回退重做。"),
+    (
+        "Critic",
+        '评审 Worker 的输出。输出 JSON：{"accepted": true/false, "feedback": "..."}。不通过回退重做。',
+    ),
     ("Synthesizer", "汇总所有任务结果，生成最终答案。"),
 ]
 for role, desc in roles:
@@ -553,9 +554,7 @@ doc.add_page_break()
 doc.add_heading("9. 企业级特性", level=1)
 
 doc.add_heading("9.1 中间件链", level=2)
-doc.add_paragraph(
-    "LLMClient 支持链式中间件。所有 LLM 请求依次经过："
-)
+doc.add_paragraph("LLMClient 支持链式中间件。所有 LLM 请求依次经过：")
 middleware = [
     "限流（Throttle）：控制请求速率",
     "重试（Retry）：失败自动重试，指数退避",
@@ -645,7 +644,9 @@ for name, val, threshold in qa_data:
 doc.add_paragraph()
 
 doc.add_paragraph("CI 流程包含 mypy strict 检查、pytest-cov 覆盖率门禁（75%）、ruff lint 检查。")
-doc.add_paragraph("Docker 交付：基于 python:3.12-slim 的多阶段构建镜像，通过 docker-compose 一键部署。")
+doc.add_paragraph(
+    "Docker 交付：基于 python:3.12-slim 的多阶段构建镜像，通过 docker-compose 一键部署。"
+)
 
 doc.add_page_break()
 
@@ -655,30 +656,46 @@ doc.add_page_break()
 doc.add_heading("11. 常见问题", level=1)
 
 faqs = [
-    ("Q: 为什么 polyagent 命令找不到？",
-     "A: polyagent.exe 安装在 venv 的 Scripts 目录下，不在系统 PATH 中。"
-     "解决方案：set PATH=<venv>/Scripts;%PATH% 或使用全路径。"),
-    ("Q: 为什么 Agent 的回答只是重复我的输入？",
-     "A: 默认使用 MockProvider（离线模拟），它原样返回输入。"
-     "加 --provider deepseek --stream 使用真实 LLM。"),
-    ("Q: 为什么 chat 感觉和普通 LLM 一样？",
-     "A: chat 命令没有挂载工具。用 shell 命令可以获得带全部工具的智能助手。"),
-    ("Q: shell 和 talk 有什么区别？",
-     "A: shell 是技术模式，显示工具调用过程和结构化回答，适合开发/调试场景。"
-     "talk 是聊天模式，隐藏所有后台操作，以拟人化风格回答，适合日常对话。"
-     "两者使用相同的工具集，只是呈现方式不同。"),
-    ("Q: .env 文件放哪？应该在哪里运行 polyagent 命令？",
-     "A: 两个关键点：(1) .env 文件必须放在项目根目录（polyagent 在当前工作目录下查找 .env）。"
-     "(2) polyagent.exe 安装在 venv 的 Scripts 目录下，不在系统 PATH 中。"
-     "所以正确的用法是：先 cd 到项目根目录（D:\\孙\\WorkBuddy\\2026-07-10-18-40-02），"
-     "再用 set PATH=... 将 Scripts 加入 PATH，最后执行 polyagent 命令。"
-     "详细步骤见第 3 章「快速开始」的 3.2 节。"),
-    ("Q: 如何给 Agent 添加自定义工具？",
-     "A: 继承 Tool 基类，实现 run 方法，然后注册到 ToolRegistry。参考 SDK 文档。"),
-    ("Q: SkillHub 技能装到哪了？",
-     "A: ~/.polyagent/skillhub-skills/{slug}/ 目录下，包含 SKILL.md 文件。"),
-    ("Q: 支持哪些 LLM 提供商？",
-     "A: 内置 MockProvider（离线）和 DeepSeekProvider。任何 OpenAI 兼容协议均可通过继承 BaseProvider 接入。"),
+    (
+        "Q: 为什么 polyagent 命令找不到？",
+        "A: polyagent.exe 安装在 venv 的 Scripts 目录下，不在系统 PATH 中。"
+        "解决方案：set PATH=<venv>/Scripts;%PATH% 或使用全路径。",
+    ),
+    (
+        "Q: 为什么 Agent 的回答只是重复我的输入？",
+        "A: 默认使用 MockProvider（离线模拟），它原样返回输入。"
+        "加 --provider deepseek --stream 使用真实 LLM。",
+    ),
+    (
+        "Q: 为什么 chat 感觉和普通 LLM 一样？",
+        "A: chat 命令没有挂载工具。用 shell 命令可以获得带全部工具的智能助手。",
+    ),
+    (
+        "Q: shell 和 talk 有什么区别？",
+        "A: shell 是技术模式，显示工具调用过程和结构化回答，适合开发/调试场景。"
+        "talk 是聊天模式，隐藏所有后台操作，以拟人化风格回答，适合日常对话。"
+        "两者使用相同的工具集，只是呈现方式不同。",
+    ),
+    (
+        "Q: .env 文件放哪？应该在哪里运行 polyagent 命令？",
+        "A: 两个关键点：(1) .env 文件必须放在项目根目录（polyagent 在当前工作目录下查找 .env）。"
+        "(2) polyagent.exe 安装在 venv 的 Scripts 目录下，不在系统 PATH 中。"
+        "所以正确的用法是：先 cd 到项目根目录（D:\\孙\\WorkBuddy\\2026-07-10-18-40-02），"
+        "再用 set PATH=... 将 Scripts 加入 PATH，最后执行 polyagent 命令。"
+        "详细步骤见第 3 章「快速开始」的 3.2 节。",
+    ),
+    (
+        "Q: 如何给 Agent 添加自定义工具？",
+        "A: 继承 Tool 基类，实现 run 方法，然后注册到 ToolRegistry。参考 SDK 文档。",
+    ),
+    (
+        "Q: SkillHub 技能装到哪了？",
+        "A: ~/.polyagent/skillhub-skills/{slug}/ 目录下，包含 SKILL.md 文件。",
+    ),
+    (
+        "Q: 支持哪些 LLM 提供商？",
+        "A: 内置 MockProvider（离线）和 DeepSeekProvider。任何 OpenAI 兼容协议均可通过继承 BaseProvider 接入。",
+    ),
 ]
 for q, a in faqs:
     p = doc.add_paragraph()
@@ -762,8 +779,7 @@ doc.add_paragraph()
 
 doc.add_heading("12.3 许可", level=2)
 doc.add_paragraph(
-    "PolyAgent 是一个开源项目，遵循本仓库的许可证条款。"
-    "腾讯 SkillHub 的技能版权归其各自作者所有。"
+    "PolyAgent 是一个开源项目，遵循本仓库的许可证条款。腾讯 SkillHub 的技能版权归其各自作者所有。"
 )
 
 # ── 保存 ──────────────────────────────────────────────
@@ -774,6 +790,7 @@ try:
 except PermissionError:
     # If file is locked (e.g. opened in Word/WPS), save with a timestamp suffix
     from datetime import datetime
+
     alt = output.replace(".docx", f"_{datetime.now().strftime('%H%M%S')}.docx")
     doc.save(alt)
     print(f"OK: saved to {alt} (original was locked)")

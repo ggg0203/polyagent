@@ -60,9 +60,7 @@ class ChatStore:
 
     # ── public helpers ──────────────────────────────────────────────────── #
 
-    def save_messages(
-        self, messages: list[Message], mode: str, max_load: int = 40
-    ) -> None:
+    def save_messages(self, messages: list[Message], mode: str, max_load: int = 40) -> None:
         """Save a list of messages to the current (or new) session.
 
         Keeps at most ``max_load`` USER + ASSISTANT + TOOL messages in the
@@ -82,9 +80,7 @@ class ChatStore:
         for msg in messages:
             if msg.role == Role.SYSTEM:
                 continue
-            tool_calls_json = (
-                _tool_calls_to_json(msg.tool_calls) if msg.tool_calls else None
-            )
+            tool_calls_json = _tool_calls_to_json(msg.tool_calls) if msg.tool_calls else None
             self._conn.execute(
                 """INSERT INTO chat_messages
                    (session_id, role, content, tool_calls_json, tool_call_id,
@@ -111,9 +107,7 @@ class ChatStore:
         # Prune old messages beyond limit
         self._prune_old(session_id, max_load)
 
-    def load_last_session(
-        self, mode: str, max_messages: int = 20
-    ) -> list[Message]:
+    def load_last_session(self, mode: str, max_messages: int = 20) -> list[Message]:
         """Load the most recent session's latest messages as a Message list.
 
         Returns messages in chronological order, ready to be appended to the
@@ -172,7 +166,7 @@ class ChatStore:
         )
         row = cur.fetchone()
         if row:
-            return row[0]
+            return str(row[0])
         sid = _new_id()
         now = _now()
         self._conn.execute(
@@ -219,10 +213,7 @@ def _new_id() -> str:
 
 def _tool_calls_to_json(calls: list[ToolCall]) -> str:
     return json.dumps(
-        [
-            {"id": c.id, "name": c.name, "arguments": c.arguments}
-            for c in calls
-        ],
+        [{"id": c.id, "name": c.name, "arguments": c.arguments} for c in calls],
         ensure_ascii=False,
     )
 

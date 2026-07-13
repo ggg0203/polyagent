@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from pydantic import BaseModel, Field
 
@@ -36,7 +36,7 @@ class CurrentTime(Tool):
     args_model = CurrentTimeArgs
 
     async def run(self, args: CurrentTimeArgs) -> ToolResult:
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         cn = now.strftime("%Y-%m-%d %H:%M:%S")
         return ToolResult(output=f"当前 UTC 时间: {cn}（时区: {args.tz}）")
 
@@ -65,11 +65,11 @@ class FormatTimestamp(Tool):
 
     async def run(self, args: FormatTimestampArgs) -> ToolResult:
         try:
-            dt = datetime.fromtimestamp(args.timestamp, tz=timezone.utc)
+            dt = datetime.fromtimestamp(args.timestamp, tz=UTC)
         except (ValueError, OSError) as exc:
             return ToolResult(output=f"时间戳无效: {exc}", error=True)
         return ToolResult(output=dt.strftime(args.format))
 
 
-def get_tools():
+def get_tools() -> list[CurrentTime | DateDiff | FormatTimestamp]:
     return [CurrentTime(), DateDiff(), FormatTimestamp()]

@@ -49,4 +49,3 @@ def __getattr__(name: str):  # type: ignore[no-untyped-def]
 
         return Agent
     raise AttributeError(f"module 'polyagent.core' has no attribute {name!r}")
-

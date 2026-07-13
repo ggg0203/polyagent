@@ -80,8 +80,15 @@ async def test_run_produces_trace_metrics_and_cost() -> None:
     worker = Worker(_role(MockProvider(script=[_resp("w1"), _resp("w2")]), tracer, metrics, cost))
     critic = Critic(
         _role(
-            MockProvider(script=[_resp('{"accepted": true, "feedback": "ok"}'), _resp('{"accepted": true, "feedback": "ok"}')]),
-            tracer, metrics, cost,
+            MockProvider(
+                script=[
+                    _resp('{"accepted": true, "feedback": "ok"}'),
+                    _resp('{"accepted": true, "feedback": "ok"}'),
+                ]
+            ),
+            tracer,
+            metrics,
+            cost,
         )
     )
     synth = Synthesizer(_role(MockProvider(script=[_resp("ANSWER")]), tracer, metrics, cost))

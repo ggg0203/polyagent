@@ -50,7 +50,7 @@ class SummarizingCompressor:
         if len(messages) <= self.keep_recent:
             return list(messages)
         older = messages[: -self.keep_recent]
-        recent = messages[-self.keep_recent:]
+        recent = messages[-self.keep_recent :]
         summary = await self._summarize(older)
         summary_msg = Message(
             role=Role.SYSTEM, content=f"Summary of earlier conversation:\n{summary}"

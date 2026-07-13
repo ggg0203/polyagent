@@ -88,8 +88,10 @@ include = ["polyagent*"]
 
 # ---------- ruff ----------
 [tool.ruff]
-line-length = 100
+line-length = 120
 target-version = "py311"
+# Examples are user-facing demos; keep them readable over rule-pure.
+extend-exclude = ["examples", "dist", "build"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM", "C4"]
