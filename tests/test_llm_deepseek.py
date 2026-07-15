@@ -1,6 +1,7 @@
 """Tests for DeepSeek DSML tool-call parsing fallback."""
 
-from polyagent.llm.deepseek import _extract_tool_calls, _parse_dsml, _strip_dsml
+from polyagent.llm.deepseek import _parse_dsml, _strip_dsml
+from polyagent.llm.openai_compat import _extract_tool_calls
 
 
 def test_parse_dsml_web_search() -> None:
@@ -34,20 +35,17 @@ def test_extract_tool_calls_prefers_standard() -> None:
     assert cleaned == content
 
 
-def test_extract_tool_calls_falls_back_to_dsml() -> None:
+def test_extract_tool_calls_returns_none_when_no_calls() -> None:
+    """Generic _extract_tool_calls does NOT parse DSML (DeepSeekProvider.chat handles that)."""
     content = """<|DSML| |tool_calls>
 <|DSML| |invoke name="web_search">
 <|DSML| |parameter name="query" string="true">hello</|DSML| |parameter>
 </|DSML| |invoke>
 </|DSML| |tool_calls>"""
     calls, cleaned = _extract_tool_calls(None, content)
-    assert calls is not None
-    assert calls[0].name == "web_search"
-    import json
-
-    args = json.loads(calls[0].arguments)
-    assert args["query"] == "hello"
-    assert cleaned == ""
+    # Generic extractor returns None; DSML is handled by DeepSeekProvider.chat() override
+    assert calls is None
+    assert cleaned == content
 
 
 def test_strip_dsml_only() -> None:

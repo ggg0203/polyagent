@@ -9,16 +9,24 @@ import os
 from datetime import datetime
 
 import typer
+from dotenv import load_dotenv
 
 from polyagent import __version__
 from polyagent.cli.demo import build_demo_orchestrator
 
+# Auto-load .env so DEEPSEEK_API_KEY is available to CLI and SDK
+load_dotenv()
+
 
 def _resolve_provider(provider: str | None) -> str:
-    """Auto-detect: deepseek if key is set, otherwise mock."""
+    """Auto-detect: deepseek if DEEPSEEK_API_KEY, generic if LLM_API_KEY, otherwise mock."""
     if provider:
         return provider
-    return "deepseek" if os.getenv("DEEPSEEK_API_KEY") else "mock"
+    if os.getenv("DEEPSEEK_API_KEY"):
+        return "deepseek"
+    if os.getenv("LLM_API_KEY"):
+        return "generic"
+    return "mock"
 
 
 app = typer.Typer(
@@ -43,7 +51,7 @@ def version() -> None:
 def run(
     goal: str = typer.Argument(help="The goal to decompose and execute."),
     provider: str | None = typer.Option(
-        None, help="mock | deepseek (default: auto-detect from DEEPSEEK_API_KEY)."
+        None, help="mock | deepseek | generic (default: auto-detect from env)."
     ),
     persist: bool = typer.Option(True, help="Save the run to polyagent.db."),
 ) -> None:
@@ -55,16 +63,38 @@ def run(
 async def _run_async(goal: str, provider: str, persist: bool = True) -> None:
     if provider == "mock":
         orch, tracer, cost = build_demo_orchestrator()
-    elif provider == "deepseek":
-        from polyagent.cli.demo import build_deepseek_orchestrator
+    elif provider in ("deepseek", "generic"):
+        from polyagent.llm.openai_compat import OpenAICompatibleProvider
 
-        try:
-            orch, tracer, cost = build_deepseek_orchestrator()
-        except ValueError as exc:
-            typer.echo(str(exc), err=True)
-            raise typer.Exit(1) from exc
+        if provider == "deepseek":
+            from polyagent.llm.deepseek import DeepSeekProvider  # noqa: F811
+
+            llm_provider: OpenAICompatibleProvider = DeepSeekProvider()
+        else:
+            llm_provider = OpenAICompatibleProvider()
+
+        from polyagent.core.agent import Agent
+        from polyagent.core.types import AgentSpec, CostReport
+        from polyagent.llm.client import LLMClient
+        from polyagent.observability.tracer import Tracer
+        from polyagent.orchestration import Critic, Orchestrator, Planner, Synthesizer, Worker
+
+        model = llm_provider.default_model
+        client = LLMClient(llm_provider)
+        tracer = Tracer()
+        cost = CostReport()
+
+        planner = Agent(AgentSpec(name="planner", role="planner", model=model), client)
+        worker = Agent(AgentSpec(name="worker", role="worker", model=model), client)
+        critic_agent = Agent(AgentSpec(name="critic", role="critic", model=model), client)
+        synth = Agent(AgentSpec(name="synthesizer", role="synthesizer", model=model), client)
+
+        orch = Orchestrator(
+            Planner(planner), Worker(worker), Critic(critic_agent), Synthesizer(synth),
+            tracer=tracer, cost_report=cost,
+        )
     else:
-        typer.echo(f"unknown provider '{provider}'; use mock or deepseek.", err=True)
+        typer.echo(f"unknown provider '{provider}'; use mock, deepseek, or generic.", err=True)
         raise typer.Exit(1)
     result = await orch.run(goal)
     typer.echo(f"Answer: {result.answer}")
@@ -114,7 +144,7 @@ async def _run_async(goal: str, provider: str, persist: bool = True) -> None:
 @app.command()
 def chat(
     provider: str | None = typer.Option(
-        None, help="mock | deepseek (default: auto-detect from DEEPSEEK_API_KEY)."
+        None, help="mock | deepseek | generic (default: auto-detect from env)."
     ),
     stream: bool = typer.Option(False, help="Stream tokens live (deepseek only)."),
 ) -> None:
@@ -148,6 +178,17 @@ async def _chat_async(provider: str, stream: bool) -> None:
         )
         ds = DeepSeekProvider(api_key=s.api_key, base_url=s.base_url, model=s.model)
         agent = Agent(spec, LLMClient(ds))
+    elif provider == "generic":
+        from polyagent.llm.openai_compat import OpenAICompatibleProvider
+
+        llm_provider = OpenAICompatibleProvider()
+        spec = AgentSpec(
+            name="chat",
+            role="worker",
+            model=llm_provider.default_model,
+            system_prompt="You are a helpful assistant.",
+        )
+        agent = Agent(spec, LLMClient(llm_provider))
     else:
         typer.echo(f"unknown provider '{provider}'.", err=True)
         raise typer.Exit(1)

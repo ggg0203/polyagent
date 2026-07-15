@@ -1,4 +1,4 @@
-"""LLM: Provider protocol, DeepSeek/Mock implementations, reliability middleware, LLMClient.
+"""LLM: Provider protocol, DeepSeek/Mock implementations, OpenAI-compatible, reliability middleware, LLMClient.
 
 Middleware chain: RateLimit -> Retry -> Fallback -> Budget -> Cost -> provider.
 """
@@ -16,6 +16,7 @@ from polyagent.llm.middleware import (
     build_chain,
 )
 from polyagent.llm.mock import MockProvider
+from polyagent.llm.openai_compat import OpenAICompatibleProvider
 from polyagent.llm.provider import LLMProvider
 from polyagent.llm.types import LLMRequest, LLMResponse
 
@@ -31,6 +32,7 @@ __all__ = [
     "LLMResponse",
     "Middleware",
     "MockProvider",
+    "OpenAICompatibleProvider",
     "RateLimitMiddleware",
     "RetryMiddleware",
     "build_chain",
